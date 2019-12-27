@@ -1,5 +1,26 @@
 package com.stackroute.keepnote.config;
 
+import java.util.Properties;
+
+import javax.annotation.PostConstruct;
+import javax.sql.DataSource;
+
+import org.hibernate.SessionFactory;
+
+//import org.hsqldb.util.DatabaseManagerSwing;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.orm.hibernate5.HibernateTransactionManager;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import com.stackroute.keepnote.model.Note;
+
 /*This class will contain the application-context for the application. 
  * Define the following annotations:
  * @Configuration - Annotating a class with the @Configuration indicates that the 
@@ -8,7 +29,8 @@ package com.stackroute.keepnote.config;
  * @EnableTransactionManagement - Enables Spring's annotation-driven transaction management capability.
  *                  
  * */
-
+@Configuration
+@EnableTransactionManagement
 public class ApplicationContextConfig {
 
 	/*
@@ -17,18 +39,51 @@ public class ApplicationContextConfig {
 	 * name 2. Database URL 3. UserName 4. Password
 	 */
 
-/*
-        Use this configuration while submitting solution in hobbes.
+//******************mysql
+	@Bean
+	@Autowired
+	public DataSource dataSource() {
+		DriverManagerDataSource dataSource = new DriverManagerDataSource();
+		dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+		dataSource.setUrl("jdbc:mysql://localhost:3306/keep");
+		dataSource.setUsername("root");
+		dataSource.setPassword("root");
+		return dataSource;
+	}
+
+
+//****************hobbes
+//	  Use this configuration while submitting solution in hobbes.	
+	/*@Bean
+	@Autowired
+	public DataSource dataSource() {
+		DriverManagerDataSource dataSource = new DriverManagerDataSource();
 		dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
 		dataSource.setUrl("jdbc:mysql://" + System.getenv("MYSQL_HOST") + ":3306/" + System.getenv("MYSQL_DATABASE")
-				+"?verifyServerCertificate=false&useSSL=false&requireSSL=false");
+				+ "?verifyServerCertificate=false&useSSL=false&requireSSL=false");
 		dataSource.setUsername(System.getenv("MYSQL_USER"));
-		dataSource.setPassword(System.getenv("MYSQL_PASSWORD")); */
-
+		dataSource.setPassword(System.getenv("MYSQL_PASSWORD"));
+		return dataSource;
+	}
+*/
 	/*
 	 * Define the bean for SessionFactory. Hibernate SessionFactory is the factory
 	 * class through which we get sessions and perform database operations.
 	 */
+	@Bean
+	@Autowired
+	public LocalSessionFactoryBean sessionFactory(DataSource dataSource) {
+		LocalSessionFactoryBean sessionFactoryBean = new LocalSessionFactoryBean();
+		sessionFactoryBean.setDataSource(dataSource);
+		Properties hibernateProperties = new Properties();
+		hibernateProperties.put("hibernate.show_sql", "true");
+		hibernateProperties.put("hibernate.hbm2ddl.auto", "update");
+		hibernateProperties.put("hibernate.dialect","org.hibernate.dialect.MySQL5Dialect");
+		sessionFactoryBean.setAnnotatedClasses(Note.class);
+		sessionFactoryBean.setHibernateProperties(hibernateProperties);		
+		return sessionFactoryBean;
+		
+	}
 
 	/*
 	 * Define the bean for Transaction Manager. HibernateTransactionManager handles
@@ -38,4 +93,13 @@ public class ApplicationContextConfig {
 	 * JDBC too. HibernateTransactionManager allows bulk update and bulk insert and
 	 * ensures data integrity.
 	 */
+	
+
+	@Bean
+	@Autowired
+	public HibernateTransactionManager transactionManager(SessionFactory s) {
+		HibernateTransactionManager txManager = new HibernateTransactionManager();
+		txManager.setSessionFactory(s);
+		return txManager;
+	}
 }

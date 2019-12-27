@@ -2,7 +2,13 @@ package com.stackroute.keepnote.dao;
 
 import java.util.List;
 
+import javax.persistence.criteria.CriteriaQuery;
+import javax.transaction.Transactional;
+
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import com.stackroute.keepnote.model.Note;
 
@@ -16,22 +22,31 @@ import com.stackroute.keepnote.model.Note;
  * 					context.  
  * */
 
+@Repository
+@Transactional
 public class NoteDAOImpl implements NoteDAO {
 
 	/*
 	 * Autowiring should be implemented for the SessionFactory.
 	 */
+	@Autowired
+	SessionFactory sessionFactory;
 
 	public NoteDAOImpl(SessionFactory sessionFactory) {
-
+		this.sessionFactory=sessionFactory;
 	}
 
+	private Session getSession() {
+		return this.sessionFactory.getCurrentSession();
+	}
 	/*
 	 * Save the note in the database(note) table.
 	 */
 
 	public boolean saveNote(Note note) {
-		return false;
+		
+		getSession().save(note);
+		return true;
 
 	}
 
@@ -40,7 +55,9 @@ public class NoteDAOImpl implements NoteDAO {
 	 */
 
 	public boolean deleteNote(int noteId) {
-		return false;
+		
+		getSession().delete(getNoteById(noteId));
+		return true;
 
 	}
 
@@ -49,7 +66,10 @@ public class NoteDAOImpl implements NoteDAO {
 	 * order(showing latest note first)
 	 */
 	public List<Note> getAllNotes() {
-		return null;
+		
+		CriteriaQuery<Note> criteriaQuery = getSession().getCriteriaBuilder().createQuery(Note.class);
+		criteriaQuery.from(Note.class);
+		return getSession().createQuery(criteriaQuery).getResultList();
 
 	}
 
@@ -57,15 +77,16 @@ public class NoteDAOImpl implements NoteDAO {
 	 * retrieve specific note from the database(note) table
 	 */
 	public Note getNoteById(int noteId) {
-		return null;
+		
+		return getSession().find(Note.class, noteId);
 
 	}
 
 	/* Update existing note */
 
 	public boolean UpdateNote(Note note) {
-		return false;
-
+		 getSession().update(note);;
+		 return true;
 	}
 
 }
