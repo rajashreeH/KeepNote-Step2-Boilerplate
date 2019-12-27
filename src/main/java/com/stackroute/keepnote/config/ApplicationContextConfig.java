@@ -40,7 +40,7 @@ public class ApplicationContextConfig {
 	 */
 
 //******************mysql
-	@Bean
+	/*@Bean
 	@Autowired
 	public DataSource dataSource() {
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
@@ -49,12 +49,12 @@ public class ApplicationContextConfig {
 		dataSource.setUsername("root");
 		dataSource.setPassword("root");
 		return dataSource;
-	}
+	}*/
 
 
 //****************hobbes
 //	  Use this configuration while submitting solution in hobbes.	
-	/*@Bean
+	@Bean
 	@Autowired
 	public DataSource dataSource() {
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
@@ -65,7 +65,7 @@ public class ApplicationContextConfig {
 		dataSource.setPassword(System.getenv("MYSQL_PASSWORD"));
 		return dataSource;
 	}
-*/
+
 	/*
 	 * Define the bean for SessionFactory. Hibernate SessionFactory is the factory
 	 * class through which we get sessions and perform database operations.
